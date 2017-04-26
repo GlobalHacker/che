@@ -57,7 +57,7 @@ public class RequestDispatcher {
             RequestHandler handler = registry.getRequestHandler(method);
             checkHandler(method, handler, id);
             JsonRpcResult result = handler.handle(endpointId, params);
-            JsonRpcResponse response = factory.createResponse(id, result, null);
+            JsonRpcResponse response = factory.createResponse(id, result);
 
             LOG.debug("Transmitting back a response: {}", response);
             transmitter.transmit(endpointId, response.toString());

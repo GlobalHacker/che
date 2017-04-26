@@ -46,8 +46,8 @@ public class JsonRpcErrorTransmitter {
         JsonRpcError error = jsonRpcFactory.createError(e.getCode(), e.getMessage());
         final String id = e.getId();
         JsonRpcResponse response = isNullOrEmpty(id) ?
-                                   jsonRpcFactory.createResponse(null, error) :
-                                   jsonRpcFactory.createResponse(id, null, error);
+                                   jsonRpcFactory.createResponse(error) :
+                                   jsonRpcFactory.createResponse(id, error);
         transmitter.transmit(endpointId, response.toString());
     }
 }

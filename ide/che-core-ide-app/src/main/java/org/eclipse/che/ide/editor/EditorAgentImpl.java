@@ -70,6 +70,7 @@ import org.eclipse.che.ide.part.editor.multipart.EditorMultiPartStackPresenter;
 import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
 import org.eclipse.che.ide.resource.Path;
 import org.eclipse.che.ide.resources.reveal.RevealResourceEvent;
+import org.eclipse.che.ide.util.loging.Log;
 
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
@@ -145,7 +146,17 @@ public class EditorAgentImpl implements EditorAgent,
 
     @Override
     public void onClose(EditorPartPresenter editor) {
-        closeEditor(editor);
+        if (editor == null) {
+            return;
+        }
+
+        final EditorPartStack editorPartStack = editorMultiPartStack.getPartStackByPart(editor);
+        if (editorPartStack == null) {
+            return;
+        }
+
+        EditorTab editorTab = editorPartStack.getTabByPart(editor);
+        doCloseEditor(editorTab);
     }
 
     @Override
@@ -190,6 +201,7 @@ public class EditorAgentImpl implements EditorAgent,
 
     @Override
     public void closeEditor(final EditorPartPresenter editor) {
+        Log.error(getClass(), "**** closeEditor ");
         if (editor == null) {
             return;
         }
@@ -348,16 +360,16 @@ public class EditorAgentImpl implements EditorAgent,
 
     /** {@inheritDoc} */
     @Override
-    public void saveAll(final AsyncCallback callback) {
+    public void saveAll(final AsyncCallback<Void> callback) {
         dirtyEditors = getDirtyEditors();
         if (dirtyEditors.isEmpty()) {
-            callback.onSuccess("Success");
+            callback.onSuccess(null);
         } else {
             doSave(callback);
         }
     }
 
-    private void doSave(final AsyncCallback callback) {
+    private void doSave(final AsyncCallback<Void> callback) {
         final EditorPartPresenter partPresenter = dirtyEditors.get(0);
         partPresenter.doSave(new AsyncCallback<EditorInput>() {
             @Override
@@ -369,7 +381,7 @@ public class EditorAgentImpl implements EditorAgent,
             public void onSuccess(EditorInput result) {
                 dirtyEditors.remove(partPresenter);
                 if (dirtyEditors.isEmpty()) {
-                    callback.onSuccess("Success");
+                    callback.onSuccess(null);
                 } else {
                     doSave(callback);
                 }

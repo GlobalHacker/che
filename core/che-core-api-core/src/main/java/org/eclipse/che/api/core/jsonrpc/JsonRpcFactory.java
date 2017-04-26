@@ -71,25 +71,42 @@ public interface JsonRpcFactory {
      *         response identifier
      * @param result
      *         response result - should be null if error happened
+     *
+     * @return JSON RPC response
+     */
+    JsonRpcResponse createResponse(@Assisted("id") String id, @Assisted("result") JsonRpcResult result);
+
+    /**
+     * Create a JSON RPC response instance by passing corresponding values
+     *
+     * @param id
+     *         response identifier
      * @param error
      *         response error - should be null if result is present
      *
      * @return JSON RPC response
      */
-    JsonRpcResponse createResponse(@Assisted("id") String id, @Assisted("result") JsonRpcResult result,
-                                   @Assisted("error") JsonRpcError error);
+    JsonRpcResponse createResponse(@Assisted("id") String id, @Assisted("error") JsonRpcError error);
 
     /**
      * Create a JSON RPC response instance by passing corresponding values
      *
      * @param result
      *         response result - should be null if error happened
+     *
+     * @return JSON RPC response
+     */
+    JsonRpcResponse createResponse(@Assisted("result") JsonRpcResult result);
+
+    /**
+     * Create a JSON RPC response instance by passing corresponding values
+     *
      * @param error
      *         response error - should be null if result is present
      *
      * @return JSON RPC response
      */
-    JsonRpcResponse createResponse(@Assisted("result") JsonRpcResult result, @Assisted("error") JsonRpcError error);
+    JsonRpcResponse createResponse(@Assisted("error") JsonRpcError error);
 
     /**
      * Create a JSON RPC error instance by passing corresponding values

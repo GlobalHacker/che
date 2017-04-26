@@ -35,9 +35,9 @@ import org.eclipse.che.ide.ext.java.shared.dto.refactoring.RefactoringPreview;
 import org.eclipse.che.ide.ext.java.shared.dto.refactoring.RefactoringResult;
 import org.eclipse.che.ide.ext.java.shared.dto.refactoring.RefactoringSession;
 
-import static org.eclipse.che.ide.api.event.ng.FileTrackingEvent.newFileTrackingMoveEvent;
-import static org.eclipse.che.ide.api.event.ng.FileTrackingEvent.newFileTrackingResumeEvent;
-import static org.eclipse.che.ide.api.event.ng.FileTrackingEvent.newFileTrackingSuspendEvent;
+import static org.eclipse.che.ide.api.event.ng.FileTrackingEvent.newFileTrackingMovedEvent;
+import static org.eclipse.che.ide.api.event.ng.FileTrackingEvent.newFileTrackingResumedEvent;
+import static org.eclipse.che.ide.api.event.ng.FileTrackingEvent.newFileTrackingSuspendedEvent;
 import static org.eclipse.che.ide.ext.java.shared.dto.refactoring.RefactoringStatus.OK;
 
 /**
@@ -118,7 +118,7 @@ public class PreviewPresenter implements PreviewView.ActionDelegate {
     /** {@inheritDoc} */
     @Override
     public void onAcceptButtonClicked() {
-        eventBus.fireEvent(newFileTrackingSuspendEvent());
+        eventBus.fireEvent(newFileTrackingSuspendedEvent());
 
         refactoringService.applyRefactoring(session).then(new Operation<RefactoringResult>() {
             @Override
@@ -133,9 +133,9 @@ public class PreviewPresenter implements PreviewView.ActionDelegate {
                     final String path = change.getPath();
                     final String oldPath = change.getOldPath();
 
-                    eventBus.fireEvent(newFileTrackingMoveEvent(path, oldPath));
+                    eventBus.fireEvent(newFileTrackingMovedEvent(path, oldPath));
                 }
-                eventBus.fireEvent(newFileTrackingResumeEvent());
+                eventBus.fireEvent(newFileTrackingResumedEvent());
             }
         });
     }

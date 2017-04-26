@@ -29,6 +29,7 @@ import org.eclipse.che.ide.api.editor.partition.DocumentPositionMap;
 import org.eclipse.che.ide.api.editor.partition.DocumentPositionMapImpl;
 import org.eclipse.che.ide.api.editor.quickfix.QuickAssistAssistant;
 import org.eclipse.che.ide.api.editor.quickfix.QuickAssistantFactory;
+import org.eclipse.che.ide.api.editor.reconciler.DefaultReconciler;
 import org.eclipse.che.ide.api.editor.reconciler.Reconciler;
 import org.eclipse.che.ide.api.editor.reconciler.ReconcilerFactory;
 import org.eclipse.che.ide.api.editor.reconciler.ReconcilerWithAutoSave;
@@ -88,7 +89,7 @@ public class EditorApiModule extends AbstractGinModule {
 
         // bind the reconciler
         install(new GinFactoryModuleBuilder()
-                        .implement(Reconciler.class, ReconcilerWithAutoSave.class)
+                        .implement(Reconciler.class, DefaultReconciler.class)
                         .build(ReconcilerFactory.class));
 
         // bind the code assistant and quick assistant

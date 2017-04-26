@@ -11,6 +11,7 @@
 package org.eclipse.che.ide.ext.java.client.refactoring;
 
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.user.client.Timer;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
@@ -30,6 +31,7 @@ import org.eclipse.che.ide.ext.java.shared.dto.refactoring.ChangeInfo;
 import org.eclipse.che.ide.part.editor.multipart.EditorMultiPartStackPresenter;
 import org.eclipse.che.ide.resource.Path;
 import org.eclipse.che.ide.resources.reveal.RevealResourceEvent;
+import org.eclipse.che.ide.util.loging.Log;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -81,6 +83,19 @@ public class RefactoringUpdater {
      *         applied changes
      */
     public void updateAfterRefactoring(List<ChangeInfo> changes) {
+        updateAfterRefactoring(changes, () -> {
+        });
+    }
+
+    /**
+     * Iterates over each refactoring change and according to change type performs specific update operation.
+     * i.e. for {@code ChangeName#UPDATE} updates only opened editors, for {@code ChangeName#MOVE or ChangeName#RENAME_COMPILATION_UNIT}
+     * updates only new paths and opened editors, for {@code ChangeName#RENAME_PACKAGE} reloads package structure and restore expansion.
+     *
+     * @param changes
+     *         applied changes
+     */
+    public void updateAfterRefactoring(List<ChangeInfo> changes, RefactoringUpdateCallback callback) {
         if (changes == null || changes.isEmpty()) {
             return;
         }
@@ -137,11 +152,13 @@ public class RefactoringUpdater {
                     for (EditorPartPresenter editorPartPresenter : editorAgent.getOpenedEditors()) {
                         final String path = editorPartPresenter.getEditorInput().getFile().getLocation().toString();
                         if (pathChanged.contains(path)) {
+                            Log.error(getClass(), "//////////////////////////////////////////////////////// 11111");
                             eventBus.fireEvent(
                                     new FileContentUpdateEvent(editorPartPresenter.getEditorInput().getFile().getLocation().toString()));
                         }
                     }
                     setActiveEditor();
+                    callback.onRefactoringUpdateCompleted();
                 }
             });
         } else {
@@ -149,10 +166,12 @@ public class RefactoringUpdater {
                 @Override
                 public void execute() {
                     for (EditorPartPresenter editorPartPresenter : editorAgent.getOpenedEditors()) {
+                        Log.error(getClass(), "//////////////////////////////////////////////////////// 222");
                         eventBus.fireEvent(
                                 new FileContentUpdateEvent(editorPartPresenter.getEditorInput().getFile().getLocation().toString()));
                     }
                     setActiveEditor();
+                    callback.onRefactoringUpdateCompleted();
                 }
             });
         }
@@ -183,5 +202,9 @@ public class RefactoringUpdater {
         if (activePart != null) {
             workspaceAgent.setActivePart(activePart);
         }
+    }
+
+    public interface RefactoringUpdateCallback {
+        void onRefactoringUpdateCompleted();
     }
 }

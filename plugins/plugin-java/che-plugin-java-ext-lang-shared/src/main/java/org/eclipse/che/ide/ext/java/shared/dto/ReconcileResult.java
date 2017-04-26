@@ -25,8 +25,17 @@ public interface ReconcileResult {
 
     void setProblems(List<Problem> problems);
 
+    ReconcileResult withProblems(List<Problem> problems);
+
     List<HighlightedPosition> getHighlightedPositions();
 
     void setHighlightedPositions(List<HighlightedPosition> positions);
 
+    ReconcileResult withHighlightedPositions(List<HighlightedPosition> positions);
+
+    String getFileLocation();
+
+    void setFileLocation(String path);
+
+    ReconcileResult withFileLocation(String path);
 }

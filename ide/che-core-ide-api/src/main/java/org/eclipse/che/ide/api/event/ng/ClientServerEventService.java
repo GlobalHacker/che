@@ -10,51 +10,16 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.event.ng;
 
-import com.google.web.bindery.event.shared.EventBus;
-
-import org.eclipse.che.api.project.shared.dto.event.FileTrackingOperationDto;
-import org.eclipse.che.ide.dto.DtoFactory;
-import org.eclipse.che.ide.jsonrpc.RequestTransmitter;
-import org.eclipse.che.ide.util.loging.Log;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import org.eclipse.che.api.promises.client.Promise;
 
 /**
- * @author Dmitry Kuleshov
+ * @author Roman Nikitenko
  */
-@Singleton
-public class ClientServerEventService {
-    private final DtoFactory         dtoFactory;
-    private final RequestTransmitter requestTransmitter;
+public interface ClientServerEventService {
 
-    @Inject
-    public ClientServerEventService(EventBus eventBus, DtoFactory dtoFactory, RequestTransmitter requestTransmitter) {
-        this.dtoFactory = dtoFactory;
-        this.requestTransmitter = requestTransmitter;
-
-        Log.debug(getClass(), "Adding file event listener");
-        eventBus.addHandler(FileTrackingEvent.TYPE, new FileTrackingEvent.FileTrackingEventHandler() {
-            @Override
-            public void onEvent(FileTrackingEvent event) {
-                final FileTrackingOperationDto.Type type = event.getType();
-                final String path = event.getPath();
-                final String oldPath = event.getOldPath();
-
-                transmit(path, oldPath, type);
-            }
-        });
-    }
-
-    private void transmit(String path, String oldPath, FileTrackingOperationDto.Type type) {
-        final String endpointId = "ws-agent";
-        final String method = "track:editor-file";
-        final FileTrackingOperationDto dto = dtoFactory.createDto(FileTrackingOperationDto.class)
-                                                       .withPath(path)
-                                                       .withType(type)
-                                                       .withOldPath(oldPath);
-
-
-        requestTransmitter.transmitOneToNone(endpointId, method, dto);
-    }
+    Promise<Void> sendFileTrackingStartEvent(String path);
+    Promise<Void> sendFileTrackingStopEvent(String path);
+    Promise<Void> sendFileTrackingSuspendEvent();
+    Promise<Void> sendFileTrackingResumeEvent();
+    Promise<Void> sendFileTrackingMoveEvent(String oldPath, String newPath);
 }

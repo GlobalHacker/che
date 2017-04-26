@@ -46,13 +46,14 @@ import org.eclipse.che.ide.ext.java.shared.dto.refactoring.RefactoringResult;
 import org.eclipse.che.ide.ext.java.shared.dto.refactoring.RefactoringSession;
 import org.eclipse.che.ide.ext.java.shared.dto.refactoring.RefactoringStatus;
 import org.eclipse.che.ide.ext.java.shared.dto.refactoring.ReorgDestination;
+import org.eclipse.che.ide.util.loging.Log;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.eclipse.che.ide.api.event.ng.FileTrackingEvent.newFileTrackingMoveEvent;
-import static org.eclipse.che.ide.api.event.ng.FileTrackingEvent.newFileTrackingResumeEvent;
-import static org.eclipse.che.ide.api.event.ng.FileTrackingEvent.newFileTrackingSuspendEvent;
+import static org.eclipse.che.ide.api.event.ng.FileTrackingEvent.newFileTrackingMovedEvent;
+import static org.eclipse.che.ide.api.event.ng.FileTrackingEvent.newFileTrackingResumedEvent;
+import static org.eclipse.che.ide.api.event.ng.FileTrackingEvent.newFileTrackingSuspendedEvent;
 import static org.eclipse.che.ide.api.notification.StatusNotification.DisplayMode.FLOAT_MODE;
 import static org.eclipse.che.ide.ext.java.shared.dto.refactoring.RefactoringStatus.ERROR;
 import static org.eclipse.che.ide.ext.java.shared.dto.refactoring.RefactoringStatus.FATAL;
@@ -225,7 +226,8 @@ public class MovePresenter implements MoveView.ActionDelegate {
             @Override
             public void apply(ChangeCreationResult arg) throws OperationException {
                 if (arg.isCanShowPreviewPage()) {
-                    eventBus.fireEvent(newFileTrackingSuspendEvent());
+                    Log.error(getClass(), "++++++++++++++ before suspend ");
+                    eventBus.fireEvent(newFileTrackingSuspendedEvent());
 
                     refactorService.applyRefactoring(session).then(new Operation<RefactoringResult>() {
                         @Override
@@ -248,9 +250,11 @@ public class MovePresenter implements MoveView.ActionDelegate {
                                 final String path = change.getPath();
                                 final String oldPath = change.getOldPath();
 
-                                eventBus.fireEvent(newFileTrackingMoveEvent(path, oldPath));
+                                Log.error(getClass(), "++++++++++++++ before move ");
+                                eventBus.fireEvent(newFileTrackingMovedEvent(path, oldPath));
                             }
-                            eventBus.fireEvent(newFileTrackingResumeEvent());
+                            Log.error(getClass(), "++++++++++++++ before resume ");
+                            eventBus.fireEvent(newFileTrackingResumedEvent());
                         }
                     });
                 } else {

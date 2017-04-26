@@ -15,6 +15,9 @@ package org.eclipse.che.api.project.shared;
  */
 public class Constants {
 
+
+
+
     public static final String BLANK_ID                       = "blank";
     public static final String ZIP_IMPORTER_ID                = "zip";
     public static final String VCS_PROVIDER_NAME              = "vcs.provider.name";

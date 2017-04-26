@@ -257,9 +257,11 @@ public class RefactoringManager {
      *         when refactoring session not found.
      */
     public RefactoringResult applyRefactoring(String sessionId) throws RefactoringException {
+        System.out.println("/////////////////////// applyRefactoring");
         RefactoringSession session = getRefactoringSession(sessionId);
         RefactoringResult result = session.apply();
         deleteRefactoringSession(sessionId);
+        System.out.println("/////////////////////// applyRefactoring FINISH ");
         return result;
     }
 

@@ -23,7 +23,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Transmits json rpc requests containing DTO objects.
- *
+ * <p>
  * Note: if you need to transmit or receive {@link String}, {@link Boolean},
  * {@link Double} use {@link BuildingRequestTransmitter} instance as it
  * provides more general facilities for that.
@@ -112,6 +112,33 @@ public class RequestTransmitter {
     }
 
     /**
+     * Transmit a notification with params as a single object
+     *
+     * @param endpointId
+     *         endpoint to address a transmission
+     * @param method
+     *         method name to address a transmission
+     * @param pValue
+     *         params value
+     */
+    public Promise<Void> transmitOneToEmty(String endpointId, String method, Object pValue) {
+        checkEndpointId(endpointId);
+        checkMethodName(method);
+        checkParamsValue(pValue);
+
+        Log.debug(getClass(), "Initiating a transmission of a notification: " +
+                              "endpoint ID: " + endpointId + ", " +
+                              "method: " + method + ", " +
+                              "params: " + pValue);
+
+        return transmitter.newRequest()
+                          .endpointId(endpointId)
+                          .methodName(method)
+                          .paramsAsDto(pValue)
+                          .sendAndReceiveResultAsEmpty();
+    }
+
+    /**
      * Transmit a notification with params as a string object
      *
      * @param endpointId
@@ -179,7 +206,6 @@ public class RequestTransmitter {
      *         result class
      * @param <R>
      *         result class
-     *
      * @return
      */
     public <R> Promise<R> transmitNoneToOne(String endpointId, String method, Class<R> rClass) {
@@ -210,7 +236,6 @@ public class RequestTransmitter {
      *         result class
      * @param <R>
      *         result class
-     *
      * @return
      */
     public <R> Promise<List<R>> transmitNoneToMany(String endpointId, String method, Class<R> rClass) {
@@ -245,7 +270,6 @@ public class RequestTransmitter {
      *         params class
      * @param <R>
      *         result class
-     *
      * @return
      */
     public <P, R> Promise<R> transmitOneToOne(String endpointId, String method, P pValue, Class<R> rClass) {
@@ -283,7 +307,6 @@ public class RequestTransmitter {
      *         params class
      * @param <R>
      *         result class
-     *
      * @return
      */
     public <P, R> Promise<R> transmitManyToOne(String endpointId, String method, List<P> pValue, Class<R> rClass) {
@@ -321,7 +344,6 @@ public class RequestTransmitter {
      *         params class
      * @param <R>
      *         result class
-     *
      * @return
      */
     public <P, R> Promise<List<R>> transmitOneToMany(String endpointId, String method, P pValue, Class<R> rClass) {
@@ -359,7 +381,6 @@ public class RequestTransmitter {
      *         params class
      * @param <R>
      *         result class
-     *
      * @return
      */
     public <P, R> Promise<List<R>> transmitManyToMany(String endpointId, String method, List<P> pValue, Class<R> rClass) {

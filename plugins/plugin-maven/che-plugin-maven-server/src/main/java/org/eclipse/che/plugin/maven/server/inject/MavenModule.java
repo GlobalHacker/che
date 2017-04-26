@@ -24,6 +24,7 @@ import org.eclipse.che.plugin.maven.server.core.MavenProgressNotifier;
 import org.eclipse.che.plugin.maven.server.core.MavenServerNotifier;
 import org.eclipse.che.plugin.maven.server.core.MavenTerminalImpl;
 import org.eclipse.che.plugin.maven.server.core.project.PomChangeListener;
+import org.eclipse.che.plugin.maven.server.core.reconcile.PomReconcileRequestHandler;
 import org.eclipse.che.plugin.maven.server.projecttype.MavenProjectType;
 import org.eclipse.che.plugin.maven.server.projecttype.MavenValueProviderFactory;
 import org.eclipse.che.plugin.maven.server.projecttype.handler.ArchetypeGenerationStrategy;
@@ -63,5 +64,6 @@ public class MavenModule extends AbstractModule {
 
         bind(PomChangeListener.class).asEagerSingleton();
         bind(PomModificationDetector.class).asEagerSingleton();
+        bind(PomReconcileRequestHandler.class).asEagerSingleton();
     }
 }

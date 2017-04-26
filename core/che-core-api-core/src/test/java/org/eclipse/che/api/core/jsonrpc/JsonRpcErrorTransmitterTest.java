@@ -66,7 +66,7 @@ public class JsonRpcErrorTransmitterTest {
     }
 
     private void prepareFactory() {
-        when(jsonRpcFactory.createResponse(anyString(), anyObject(), anyObject())).thenReturn(jsonRpcResponse);
+        when(jsonRpcFactory.createResponse(anyString(), (JsonRpcResult)anyObject())).thenReturn(jsonRpcResponse);
         when(jsonRpcResponse.toString()).thenReturn(STRINGIFIED_RESPONSE);
     }
 
@@ -93,7 +93,7 @@ public class JsonRpcErrorTransmitterTest {
     public void shouldCreateResponse() throws Exception {
         errorTransmitter.transmit(ENDPOINT_ID, jsonRpcException);
 
-        verify(jsonRpcFactory).createResponse(eq(REQUEST_ID), isNull(JsonRpcResult.class), jsonRpcErrorArgumentCaptor.capture());
+        verify(jsonRpcFactory).createResponse(eq(REQUEST_ID), jsonRpcErrorArgumentCaptor.capture());
         assertEquals(ERROR_CODE, jsonRpcErrorArgumentCaptor.getValue().getCode());
         assertEquals(ERROR_MESSAGE, jsonRpcErrorArgumentCaptor.getValue().getMessage());
     }

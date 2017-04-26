@@ -34,6 +34,7 @@ import org.eclipse.che.ide.api.editor.texteditor.TextEditor;
 import org.eclipse.che.ide.api.editor.texteditor.UndoableEditor;
 import org.eclipse.che.ide.api.event.FileEvent;
 import org.eclipse.che.ide.api.event.FileEvent.FileEventHandler;
+import org.eclipse.che.ide.api.event.ng.ClientServerEventService;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.resources.Project;
 import org.eclipse.che.ide.api.resources.Resource;
@@ -48,16 +49,22 @@ import org.eclipse.che.ide.ext.java.shared.dto.LinkedData;
 import org.eclipse.che.ide.ext.java.shared.dto.LinkedModeModel;
 import org.eclipse.che.ide.ext.java.shared.dto.LinkedPositionGroup;
 import org.eclipse.che.ide.ext.java.shared.dto.Region;
+import org.eclipse.che.ide.ext.java.shared.dto.refactoring.ChangeInfo;
 import org.eclipse.che.ide.ext.java.shared.dto.refactoring.CreateRenameRefactoring;
 import org.eclipse.che.ide.ext.java.shared.dto.refactoring.LinkedRenameRefactoringApply;
 import org.eclipse.che.ide.ext.java.shared.dto.refactoring.RefactoringResult;
 import org.eclipse.che.ide.ext.java.shared.dto.refactoring.RenameRefactoringSession;
+import org.eclipse.che.ide.util.loging.Log;
 
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
 import static org.eclipse.che.ide.api.event.FileEvent.FileOperation.CLOSE;
+import static org.eclipse.che.ide.api.event.ng.FileTrackingEvent.newFileTrackingMovedEvent;
+import static org.eclipse.che.ide.api.event.ng.FileTrackingEvent.newFileTrackingResumedEvent;
+import static org.eclipse.che.ide.api.event.ng.FileTrackingEvent.newFileTrackingSuspendedEvent;
 import static org.eclipse.che.ide.api.notification.StatusNotification.DisplayMode.FLOAT_MODE;
 import static org.eclipse.che.ide.api.notification.StatusNotification.Status.FAIL;
 import static org.eclipse.che.ide.ext.java.shared.dto.refactoring.CreateRenameRefactoring.RenameType.JAVA_ELEMENT;
@@ -80,6 +87,8 @@ public class JavaRefactoringRename implements FileEventHandler {
     private final JavaLocalizationConstant locale;
     private final RefactoringServiceClient refactoringServiceClient;
     private final DtoFactory               dtoFactory;
+    private final ClientServerEventService clientServerEventService;
+    private final EventBus                 eventBus;
     private final DialogFactory            dialogFactory;
     private final NotificationManager      notificationManager;
 
@@ -94,6 +103,7 @@ public class JavaRefactoringRename implements FileEventHandler {
                                  RefactoringUpdater refactoringUpdater,
                                  JavaLocalizationConstant locale,
                                  RefactoringServiceClient refactoringServiceClient,
+                                 ClientServerEventService clientServerEventService,
                                  DtoFactory dtoFactory,
                                  EventBus eventBus,
                                  DialogFactory dialogFactory,
@@ -101,6 +111,8 @@ public class JavaRefactoringRename implements FileEventHandler {
         this.renamePresenter = renamePresenter;
         this.refactoringUpdater = refactoringUpdater;
         this.locale = locale;
+        this.clientServerEventService = clientServerEventService;
+        this.eventBus = eventBus;
         this.dialogFactory = dialogFactory;
         this.refactoringServiceClient = refactoringServiceClient;
         this.dtoFactory = dtoFactory;
@@ -170,7 +182,11 @@ public class JavaRefactoringRename implements FileEventHandler {
         createRenamePromise.then(new Operation<RenameRefactoringSession>() {
             @Override
             public void apply(RenameRefactoringSession session) throws OperationException {
-                activateLinkedModeIntoEditor(session, textEditor.getDocument());
+                Log.error(getClass(), "************************* before suspend ");
+                clientServerEventService.sendFileTrackingSuspendEvent().then(success -> {
+                    eventBus.fireEvent(newFileTrackingSuspendedEvent());
+                    activateLinkedModeIntoEditor(session, textEditor.getDocument());
+                });
             }
         }).catchError(new Operation<PromiseError>() {
             @Override
@@ -241,12 +257,6 @@ public class JavaRefactoringRename implements FileEventHandler {
         });
     }
 
-    private void disableAutoSave() {
-        if (linkedEditor instanceof EditorWithAutoSave) {
-            ((EditorWithAutoSave)linkedEditor).disableAutoSave();
-        }
-    }
-
     private void performRename(RenameRefactoringSession session) {
         final LinkedRenameRefactoringApply dto = createLinkedRenameRefactoringApplyDto(newName, session.getSessionId());
         Promise<RefactoringResult> applyModelPromise = refactoringServiceClient.applyLinkedModeRename(dto);
@@ -264,7 +274,10 @@ public class JavaRefactoringRename implements FileEventHandler {
                             refactoringServiceClient.reindexProject(project.get().getLocation().toString());
                         }
 
-                        refactoringUpdater.updateAfterRefactoring(result.getChanges());
+                        refactoringUpdater.updateAfterRefactoring(result.getChanges(), () -> {
+                            enableAutoSave();
+                            handleMovingFiles(result);
+                        });
                         break;
                     case WARNING:
                     case ERROR:
@@ -295,9 +308,31 @@ public class JavaRefactoringRename implements FileEventHandler {
         });
     }
 
+    private void handleMovingFiles(RefactoringResult refactoringResult) {
+        for (ChangeInfo change : refactoringResult.getChanges()) {
+            String path = change.getPath();
+            String oldPath = change.getOldPath();
+
+            if (!isNullOrEmpty(oldPath)) {
+                clientServerEventService.sendFileTrackingMoveEvent(path, oldPath).then(success -> {
+                    eventBus.fireEvent(newFileTrackingMovedEvent(path, oldPath));
+                });
+            }
+        }
+        clientServerEventService.sendFileTrackingResumeEvent().then(success -> {
+            eventBus.fireEvent(newFileTrackingResumedEvent());
+        });
+    }
+
     private void enableAutoSave() {
         if (linkedEditor instanceof EditorWithAutoSave) {
             ((EditorWithAutoSave)linkedEditor).enableAutoSave();
+        }
+    }
+
+    private void disableAutoSave() {
+        if (linkedEditor instanceof EditorWithAutoSave) {
+            ((EditorWithAutoSave)linkedEditor).disableAutoSave();
         }
     }
 

@@ -384,6 +384,12 @@ public interface JavaLocalizationConstant extends Messages {
     @Key("unsavedChanges.title")
     String unsavedChangesTitle();
 
+    @Key("rename.unsavedDataDialog.title")
+    String renameUnsavedDataDialogTitle();
+
+    @Key("rename.unsavedDataDialog.promptSaveChanges")
+    String renameUnsavedDataDialogPromptSaveChanges();
+
     @Key("button.done")
     String buttonDone();
 

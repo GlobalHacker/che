@@ -22,7 +22,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Represents JSON RPC response object. Can be constructed out of
  * stringified json object or by passing specific parameters.
  * Use {@link JsonRpcFactory#createResponse(String)} or
- * {@link JsonRpcFactory#createResponse(String, JsonRpcResult, JsonRpcError)}
+ * {@link JsonRpcFactory#createResponse(String, JsonRpcResult)}
  * to get an instance of this entity.
  */
 public class JsonRpcResponse {
@@ -51,21 +51,35 @@ public class JsonRpcResponse {
     }
 
     @AssistedInject
-    public JsonRpcResponse(@Assisted("id") String id, @Assisted("result") JsonRpcResult result, @Assisted("error") JsonRpcError error) {
+    public JsonRpcResponse(@Assisted("id") String id, @Assisted("result") JsonRpcResult result) {
         checkNotNull(id, "ID must not be null");
         checkArgument(!id.isEmpty(), "ID must not be empty");
-        checkArgument((result == null) != (error == null), "Must be either error or result");
 
         this.id = id;
         this.result = result;
+        this.error = null;
+    }
+
+    @AssistedInject
+    public JsonRpcResponse(@Assisted("id") String id, @Assisted("error") JsonRpcError error) {
+        checkNotNull(id, "ID must not be null");
+        checkArgument(!id.isEmpty(), "ID must not be empty");
+
+        this.id = id;
+        this.result = null;
         this.error = error;
     }
 
     @AssistedInject
-    public JsonRpcResponse(@Assisted("result") JsonRpcResult result, @Assisted("error") JsonRpcError error) {
-        checkArgument((result == null) != (error == null), "Must be either error or result");
-
+    public JsonRpcResponse(@Assisted("result") JsonRpcResult result) {
         this.result = result;
+        this.error = null;
+        this.id = null;
+    }
+
+    @AssistedInject
+    public JsonRpcResponse(@Assisted("error") JsonRpcError error) {
+        this.result = null;
         this.error = error;
         this.id = null;
     }

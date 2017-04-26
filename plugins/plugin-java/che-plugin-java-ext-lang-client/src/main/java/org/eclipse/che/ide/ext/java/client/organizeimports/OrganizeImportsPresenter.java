@@ -25,7 +25,6 @@ import org.eclipse.che.ide.api.editor.texteditor.TextEditor;
 import org.eclipse.che.ide.api.editor.texteditor.UndoableEditor;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.resources.Container;
-import org.eclipse.che.ide.api.resources.File;
 import org.eclipse.che.ide.api.resources.Project;
 import org.eclipse.che.ide.api.resources.Resource;
 import org.eclipse.che.ide.api.resources.VirtualFile;
@@ -44,8 +43,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.eclipse.che.ide.api.event.ng.FileTrackingEvent.newFileTrackingResumeEvent;
-import static org.eclipse.che.ide.api.event.ng.FileTrackingEvent.newFileTrackingSuspendEvent;
+import static org.eclipse.che.ide.api.event.ng.FileTrackingEvent.newFileTrackingResumedEvent;
+import static org.eclipse.che.ide.api.event.ng.FileTrackingEvent.newFileTrackingSuspendedEvent;
 import static org.eclipse.che.ide.api.notification.StatusNotification.DisplayMode.FLOAT_MODE;
 import static org.eclipse.che.ide.api.notification.StatusNotification.Status.FAIL;
 
@@ -110,7 +109,7 @@ public class OrganizeImportsPresenter implements OrganizeImportsView.ActionDeleg
 
             final String fqn = JavaUtil.resolveFQN((Container)srcFolder.get(), (Resource)file);
 
-            eventBus.fireEvent(newFileTrackingSuspendEvent());
+            eventBus.fireEvent(newFileTrackingSuspendedEvent());
             javaCodeAssistClient.organizeImports(project.get().getLocation().toString(), fqn)
                                 .then(new Operation<OrganizeImportResult>() {
                                     @Override
@@ -120,7 +119,7 @@ public class OrganizeImportsPresenter implements OrganizeImportsView.ActionDeleg
                                         } else {
                                             applyChanges(document, result.getChanges());
                                         }
-                                        eventBus.fireEvent(newFileTrackingResumeEvent());
+                                        eventBus.fireEvent(newFileTrackingResumedEvent());
                                     }
                                 })
                                 .catchError(new Operation<PromiseError>() {
@@ -129,7 +128,7 @@ public class OrganizeImportsPresenter implements OrganizeImportsView.ActionDeleg
                                         String title = locale.failedToProcessOrganizeImports();
                                         String message = arg.getMessage();
                                         notificationManager.notify(title, message, FAIL, FLOAT_MODE);
-                                        eventBus.fireEvent(newFileTrackingResumeEvent());
+                                        eventBus.fireEvent(newFileTrackingResumedEvent());
                                     }
                                 });
         }

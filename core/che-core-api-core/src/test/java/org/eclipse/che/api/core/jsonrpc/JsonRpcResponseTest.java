@@ -134,7 +134,7 @@ public class JsonRpcResponseTest {
     public void shouldHaveErrorWhenPassingParametersWithError() throws Exception {
         response.remove("result");
 
-        JsonRpcResponse jsonRpcResponse = new JsonRpcResponse(ID, null, error);
+        JsonRpcResponse jsonRpcResponse = new JsonRpcResponse(ID, error);
 
         assertTrue(jsonRpcResponse.hasError());
         assertFalse(jsonRpcResponse.hasResult());
@@ -144,7 +144,7 @@ public class JsonRpcResponseTest {
     public void shouldHaveResultWhenPassingParametersWithResult() throws Exception {
         response.remove("error");
 
-        JsonRpcResponse jsonRpcResponse = new JsonRpcResponse(ID, result, null);
+        JsonRpcResponse jsonRpcResponse = new JsonRpcResponse(ID, result);
 
         assertTrue(jsonRpcResponse.hasResult());
         assertFalse(jsonRpcResponse.hasError());
@@ -155,7 +155,7 @@ public class JsonRpcResponseTest {
         JsonObject expected = response;
         expected.remove("error");
 
-        JsonRpcResponse jsonRpcResponse = new JsonRpcResponse(ID, result, null);
+        JsonRpcResponse jsonRpcResponse = new JsonRpcResponse(ID, result);
         JsonObject actual = jsonRpcResponse.toJsonObject();
 
         assertEquals(expected, actual);
@@ -166,7 +166,7 @@ public class JsonRpcResponseTest {
         JsonObject expected = response;
         expected.remove("result");
 
-        JsonRpcResponse jsonRpcResponse = new JsonRpcResponse(ID, null, error);
+        JsonRpcResponse jsonRpcResponse = new JsonRpcResponse(ID, error);
         JsonObject actual = jsonRpcResponse.toJsonObject();
 
         assertEquals(expected, actual);
@@ -177,7 +177,7 @@ public class JsonRpcResponseTest {
         JsonObject expected = response;
         expected.remove("error");
 
-        JsonRpcResponse jsonRpcResponse = new JsonRpcResponse(ID, result, null);
+        JsonRpcResponse jsonRpcResponse = new JsonRpcResponse(ID, result);
         JsonElement actual = jsonParser.parse(jsonRpcResponse.toString());
 
         assertEquals(expected, actual);
@@ -188,7 +188,7 @@ public class JsonRpcResponseTest {
         JsonObject expected = response;
         expected.remove("result");
 
-        JsonRpcResponse jsonRpcResponse = new JsonRpcResponse(ID, null, error);
+        JsonRpcResponse jsonRpcResponse = new JsonRpcResponse(ID, error);
         JsonElement actual = jsonParser.parse(jsonRpcResponse.toString());
 
         assertEquals(expected, actual);

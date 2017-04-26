@@ -64,7 +64,7 @@ public class RequestDispatcherTest {
 
         when(requestHandler.handle(ENDPOINT_ID, params)).thenReturn(result);
 
-        when(jsonRpcFactory.createResponse(REQUEST_ID, result, null)).thenReturn(response);
+        when(jsonRpcFactory.createResponse(REQUEST_ID, result)).thenReturn(response);
 
         when(response.toString()).thenReturn(STRINGIFIED_RESPONSE);
 
@@ -101,7 +101,7 @@ public class RequestDispatcherTest {
     public void shouldCreateResponseWhenRequestIsHandled() throws Exception {
         requestDispatcher.dispatch(ENDPOINT_ID, request);
 
-        verify(jsonRpcFactory).createResponse(REQUEST_ID, result, null);
+        verify(jsonRpcFactory).createResponse(REQUEST_ID, result);
     }
 
     @Test

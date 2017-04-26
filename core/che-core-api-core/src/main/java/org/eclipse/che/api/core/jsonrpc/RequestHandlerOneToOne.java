@@ -57,6 +57,6 @@ public class RequestHandlerOneToOne<P, R> implements RequestHandler {
         R result = function.apply(endpointId, paramsObject);
         LOG.debug("Received result: {}", result);
 
-        return factory.createResult(result);
+        return result == null ? new JsonRpcResult() : factory.createResult(result);
     }
 }

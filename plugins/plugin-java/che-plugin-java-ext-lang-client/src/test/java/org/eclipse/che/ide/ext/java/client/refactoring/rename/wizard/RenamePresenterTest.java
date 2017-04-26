@@ -203,18 +203,18 @@ public class RenamePresenterTest {
 
         when(changeCreationResult.getStatus()).thenReturn(refactoringStatus);
 
-        renamePresenter = new RenamePresenter(view,
-                                              similarNamesConfigurationPresenter,
-                                              locale,
-                                              editorAgent,
-                                              refactoringUpdater,
-                                              appContext,
-                                              notificationManager,
-                                              previewPresenter,
-                                              refactorService,
-                                              dtoFactory,
-                                              dialogFactory,
-                                              eventBus);
+//        renamePresenter = new RenamePresenter(view,
+//                                              similarNamesConfigurationPresenter,
+//                                              locale,
+//                                              editorAgent,
+//                                              refactoringUpdater,
+//                                              appContext,
+//                                              notificationManager,
+//                                              previewPresenter,
+//                                              refactorService,
+//                                              dtoFactory,
+//                                              dialogFactory,
+//                                              eventBus);
     }
 
     @Test

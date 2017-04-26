@@ -15,7 +15,7 @@ package org.eclipse.che.api.core.jsonrpc;
  * any JSON RPC related error is met. According to the spec
  * there should be an error code and an error message.
  */
-public class JsonRpcException extends Exception {
+public class JsonRpcException extends RuntimeException {
     private final int    code;
     private final String id;
 

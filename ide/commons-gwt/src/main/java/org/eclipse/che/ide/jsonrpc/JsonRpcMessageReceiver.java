@@ -91,7 +91,11 @@ public class JsonRpcMessageReceiver implements WebSocketMessageReceiver {
         switch (type) {
             case REQUEST:
                 JsonRpcRequest request = jsonRpcFactory.createRequest(message);
+                try {
                 requestDispatcher.dispatch(endpointId, request);
+                } catch (JsonRpcException e) {
+                    throw new JsonRpcException(e.getCode(), e.getMessage(), request.getId());
+                }
                 break;
             case RESPONSE:
                 JsonRpcResponse response = jsonRpcFactory.createResponse(message);

@@ -14,11 +14,9 @@ import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import com.google.web.bindery.event.shared.EventBus;
 
-import org.eclipse.che.ide.api.event.EditorSettingsChangedEvent;
 import org.eclipse.che.ide.editor.preferences.EditorPreferenceSection;
-import org.eclipse.che.ide.editor.preferences.editorproperties.EditorPropertiesManager;
+import org.eclipse.che.ide.editor.preferences.EditorPreferencesManager;
 
 import java.util.List;
 import java.util.Map;
@@ -31,35 +29,31 @@ import java.util.Map;
 public class EditorPropertiesSectionPresenter implements EditorPreferenceSection, EditorPropertiesSectionView.ActionDelegate {
     /** The preference page presenter. */
     private       EditorPreferenceSection.ParentPresenter parentPresenter;
-    private final EventBus                                eventBus;
     private final EditorPropertiesSectionView             view;
-    private final EditorPropertiesManager                 editorPropertiesManager;
+    private final EditorPreferencesManager                editorPreferencesManager;
     private final List<String>                            properties;
 
     @AssistedInject
     public EditorPropertiesSectionPresenter(@Assisted String title,
                                             @Assisted List<String> properties,
                                             final EditorPropertiesSectionView view,
-                                            final EventBus eventBus,
-                                            final EditorPropertiesManager editorPropertiesManager) {
+                                            final EditorPreferencesManager editorPreferencesManager) {
         this.view = view;
         this.view.setSectionTitle(title);
         this.view.setDelegate(this);
         this.properties = properties;
-        this.eventBus = eventBus;
-        this.editorPropertiesManager = editorPropertiesManager;
+        this.editorPreferencesManager = editorPreferencesManager;
     }
 
     @Override
     public void storeChanges() {
-        Map<String, JSONValue> editorProperties = editorPropertiesManager.getEditorProperties();
-        for (String property : editorProperties.keySet()) {
+        Map<String, JSONValue> editorPreferences = editorPreferencesManager.getEditorPreferences();
+        for (String property : editorPreferences.keySet()) {
             JSONValue actualValue = view.getPropertyValueById(property);
-            actualValue = actualValue != null ? actualValue : editorProperties.get(property);
-            editorProperties.put(property, actualValue);
+            actualValue = actualValue != null ? actualValue : editorPreferences.get(property);
+            editorPreferences.put(property, actualValue);
         }
-        editorPropertiesManager.storeEditorProperties(editorProperties);
-        eventBus.fireEvent(new EditorSettingsChangedEvent());
+        editorPreferencesManager.storeEditorPreferences(editorPreferences);
     }
 
     @Override
@@ -69,10 +63,10 @@ public class EditorPropertiesSectionPresenter implements EditorPreferenceSection
 
     @Override
     public boolean isDirty() {
-        Map<String, JSONValue> editorProperties = editorPropertiesManager.getEditorProperties();
-        for (String property : editorProperties.keySet()) {
+        Map<String, JSONValue> editorPreferences = editorPreferencesManager.getEditorPreferences();
+        for (String property : editorPreferences.keySet()) {
             JSONValue actualValue = view.getPropertyValueById(property);
-            if (actualValue != null && !actualValue.equals(editorProperties.get(property))) {
+            if (actualValue != null && !actualValue.equals(editorPreferences.get(property))) {
                 return true;
             }
         }
@@ -91,9 +85,9 @@ public class EditorPropertiesSectionPresenter implements EditorPreferenceSection
     }
 
     private void addProperties() {
-        Map<String, JSONValue> editorProperties = editorPropertiesManager.getEditorProperties();
+        Map<String, JSONValue> editorPreferences = editorPreferencesManager.getEditorPreferences();
         for (String property : properties) {
-            JSONValue value = editorProperties.get(property);
+            JSONValue value = editorPreferences.get(property);
             view.addProperty(property, value);
         }
     }

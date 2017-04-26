@@ -16,11 +16,13 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ContextMenuEvent;
 import com.google.gwt.event.dom.client.ContextMenuHandler;
 import com.google.gwt.event.dom.client.DoubleClickEvent;
+import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.SimplePanel;
@@ -29,6 +31,7 @@ import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 import com.google.web.bindery.event.shared.EventBus;
 
+import org.eclipse.che.ide.FontAwesome;
 import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
 import org.eclipse.che.ide.api.event.FileEvent;
@@ -269,6 +272,15 @@ public class EditorTabWidget extends Composite implements EditorTab, ContextMenu
     @Override
     public EditorPartPresenter getRelativeEditorPart() {
         return relatedEditorPart;
+    }
+
+    @Override
+    public void setUnsavedDataMark(boolean hasUnsavedData) {
+        if (hasUnsavedData) {
+            getElement().setAttribute("unsaved", "");
+        } else {
+            getElement().removeAttribute("unsaved");
+        }
     }
 
     /** {@inheritDoc} */

@@ -63,18 +63,21 @@ public class OrionEditorInit {
     private static final String CONTENT_ASSIST = "Content assist";
     private static final String QUICK_FIX      = "Quick fix";
 
+    private final AutoSaveMode autoSaveMode;
     private final TextEditorConfiguration configuration;
-    private final CodeAssistantFactory    codeAssistantFactory;
-    private final OrionEditorPresenter    textEditor;
-    private final QuickAssistAssistant    quickAssist;
+    private final CodeAssistantFactory codeAssistantFactory;
+    private final OrionEditorPresenter textEditor;
+    private final QuickAssistAssistant quickAssist;
 
     /**
      * The quick assist assistant.
      */
-    public OrionEditorInit(final TextEditorConfiguration configuration,
+    public OrionEditorInit(final AutoSaveMode autoSaveMode,
+                           final TextEditorConfiguration configuration,
                            final CodeAssistantFactory codeAssistantFactory,
                            final QuickAssistAssistant quickAssist,
                            final OrionEditorPresenter textEditor) {
+        this.autoSaveMode = autoSaveMode;
         this.configuration = configuration;
         this.codeAssistantFactory = codeAssistantFactory;
         this.quickAssist = quickAssist;
@@ -96,6 +99,7 @@ public class OrionEditorInit {
         configureFormatter(textEditor);
         configureSignatureHelp(textEditor);
         addQuickAssistKeyBinding();
+        configureAutoSaveMode(documentHandle);
     }
 
 
@@ -108,6 +112,12 @@ public class OrionEditorInit {
         if (signatureHelpProvider != null) {
             signatureHelpProvider.uninstall();
         }
+        autoSaveMode.uninstall();
+    }
+
+    private void configureAutoSaveMode(final DocumentHandle documentHandle) {
+        autoSaveMode.install(textEditor);
+        autoSaveMode.setDocumentHandle(documentHandle);
     }
 
     private void configureSignatureHelp(TextEditor textEditor) {
@@ -122,7 +132,6 @@ public class OrionEditorInit {
         if (formatter != null) {
             formatter.install(textEditor);
         }
-
     }
 
     /**

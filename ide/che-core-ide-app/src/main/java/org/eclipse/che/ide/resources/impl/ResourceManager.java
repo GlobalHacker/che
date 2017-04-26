@@ -71,8 +71,8 @@ import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.lang.System.arraycopy;
 import static java.util.Arrays.copyOf;
-import static org.eclipse.che.ide.api.event.ng.FileTrackingEvent.newFileTrackingResumeEvent;
-import static org.eclipse.che.ide.api.event.ng.FileTrackingEvent.newFileTrackingSuspendEvent;
+import static org.eclipse.che.ide.api.event.ng.FileTrackingEvent.newFileTrackingResumedEvent;
+import static org.eclipse.che.ide.api.event.ng.FileTrackingEvent.newFileTrackingSuspendedEvent;
 import static org.eclipse.che.ide.api.resources.Resource.FILE;
 import static org.eclipse.che.ide.api.resources.ResourceDelta.ADDED;
 import static org.eclipse.che.ide.api.resources.ResourceDelta.COPIED_FROM;
@@ -492,7 +492,7 @@ public final class ResourceManager {
                 deletedFilesController.add(source.getLocation().toString());
             }
 
-            eventBus.fireEvent(newFileTrackingSuspendEvent());
+            eventBus.fireEvent(newFileTrackingSuspendedEvent());
 
             store.dispose(source.getLocation(), !source.isFile()); //TODO: need to be tested
 
@@ -500,7 +500,7 @@ public final class ResourceManager {
                      .thenPromise(ignored -> {
                          if (source.isProject() && source.getLocation().segmentCount() == 1) {
                              return ps.getProjects().then((Function<List<ProjectConfigDto>, Resource>)updatedConfigs -> {
-                                 eventBus.fireEvent(newFileTrackingResumeEvent());
+                                 eventBus.fireEvent(newFileTrackingResumedEvent());
 
                                  //cache new configs
                                  cachedConfigs = updatedConfigs.toArray(new ProjectConfigDto[updatedConfigs.size()]);
@@ -529,10 +529,10 @@ public final class ResourceManager {
                                  eventBus.fireEvent(new ResourceChangedEvent(new ResourceDeltaImpl(movedResource.get(), source,
                                                                                                    ADDED | MOVED_FROM |
                                                                                                    MOVED_TO | DERIVED)));
-                                 eventBus.fireEvent(newFileTrackingResumeEvent());
+                                 eventBus.fireEvent(newFileTrackingResumedEvent());
                                  return movedResource.get();
                              }
-                             eventBus.fireEvent(newFileTrackingResumeEvent());
+                             eventBus.fireEvent(newFileTrackingResumedEvent());
 
                              throw new IllegalStateException("Resource not found");
                          });

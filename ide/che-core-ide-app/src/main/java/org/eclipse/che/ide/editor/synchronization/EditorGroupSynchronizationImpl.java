@@ -16,7 +16,6 @@ import com.google.web.bindery.event.shared.HandlerRegistration;
 
 import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
-import org.eclipse.che.ide.api.editor.EditorWithAutoSave;
 import org.eclipse.che.ide.api.editor.document.Document;
 import org.eclipse.che.ide.api.editor.document.DocumentHandle;
 import org.eclipse.che.ide.api.editor.document.DocumentStorage;
@@ -29,6 +28,7 @@ import org.eclipse.che.ide.api.event.FileContentUpdateHandler;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.resources.File;
 import org.eclipse.che.ide.api.resources.VirtualFile;
+import org.eclipse.che.ide.util.loging.Log;
 
 import javax.validation.constraints.NotNull;
 import java.util.HashMap;
@@ -60,24 +60,33 @@ public class EditorGroupSynchronizationImpl implements EditorGroupSynchronizatio
     @Override
     public void addEditor(EditorPartPresenter editor) {
         DocumentHandle documentHandle = getDocumentHandleFor(editor);
-        if (documentHandle != null) {
-            HandlerRegistration handlerRegistration = documentHandle.getDocEventBus().addHandler(DocumentChangeEvent.TYPE, this);
-            synchronizedEditors.put(editor, handlerRegistration);
+        if (documentHandle == null) {
+            return;
         }
+
+        if (!synchronizedEditors.isEmpty()) {//group can contains unsaved content - we need update content for the editor
+            EditorPartPresenter groupMember = synchronizedEditors.keySet().iterator().next();
+
+            Document editorDocument = documentHandle.getDocument();
+            Document groupMemberDocument = getDocumentHandleFor(groupMember).getDocument();
+
+            String oldContent = editorDocument.getContents();
+            String groupMemberContent = groupMemberDocument.getContents();
+
+            editorDocument.replace(0, oldContent.length(), groupMemberContent);
+        }
+
+        HandlerRegistration handlerRegistration = documentHandle.getDocEventBus().addHandler(DocumentChangeEvent.TYPE, this);
+        synchronizedEditors.put(editor, handlerRegistration);
     }
 
     @Override
     public void onActiveEditorChanged(@NotNull EditorPartPresenter activeEditor) {
         groupLeaderEditor = activeEditor;
-        resolveAutoSave();
     }
 
     @Override
     public void removeEditor(EditorPartPresenter editor) {
-        if (editor.isDirty()) {
-            editor.doSave();
-        }
-
         HandlerRegistration handlerRegistration = synchronizedEditors.remove(editor);
         if (handlerRegistration != null) {
             handlerRegistration.removeHandler();
@@ -90,9 +99,7 @@ public class EditorGroupSynchronizationImpl implements EditorGroupSynchronizatio
 
     @Override
     public void unInstall() {
-        for (HandlerRegistration handlerRegistration : synchronizedEditors.values()) {
-            handlerRegistration.removeHandler();
-        }
+        synchronizedEditors.values().forEach(HandlerRegistration::removeHandler);
 
         if (fileContentUpdateHandlerRegistration != null) {
             fileContentUpdateHandlerRegistration.removeHandler();
@@ -132,7 +139,6 @@ public class EditorGroupSynchronizationImpl implements EditorGroupSynchronizatio
 
         if (groupLeaderEditor == null) {
             groupLeaderEditor = synchronizedEditors.keySet().iterator().next();
-            resolveAutoSave();
         }
 
         final VirtualFile virtualFile = groupLeaderEditor.getEditorInput().getFile();
@@ -160,6 +166,8 @@ public class EditorGroupSynchronizationImpl implements EditorGroupSynchronizatio
             return;
         }
 
+//        Log.error(getClass(), "+++++++++++++++++ update content " + virtualFile.getName() + " /// " + this.hashCode());
+
         final Document document = documentHandle.getDocument();
         final String oldContent = document.getContents();
         final TextPosition cursorPosition = document.getCursorPosition();
@@ -172,12 +180,17 @@ public class EditorGroupSynchronizationImpl implements EditorGroupSynchronizatio
         final File file = (File)virtualFile;
         final String newStamp = file.getModificationStamp();
 
+//        Log.error(getClass(), "+++++++++++++++++ update content old stamp " + oldStamp);
+//        Log.error(getClass(), "+++++++++++++++++ update content new stamp " + newStamp);
+
         if (oldStamp == null && !Objects.equals(newContent, oldContent)) {
+//            Log.error(getClass(), "+++++++++++++++++ update content oldStamp == null && !Objects.equals(newContent, oldContent) ");
             replaceContent(document, newContent, oldContent, cursorPosition);
             return;
         }
 
         if (!Objects.equals(oldStamp, newStamp)) {
+            Log.error(getClass(), "+++++++++++++++++ update !Objects.equals(oldStamp, newStamp) ");
             replaceContent(document, newContent, oldContent, cursorPosition);
 
             notificationManager.notify("External operation", "File '" + file.getName() + "' is updated", SUCCESS, EMERGE_MODE);
@@ -195,27 +208,5 @@ public class EditorGroupSynchronizationImpl implements EditorGroupSynchronizatio
             return null;
         }
         return ((TextEditor)editor).getDocument().getDocumentHandle();
-    }
-
-    private void resolveAutoSave() {
-        for (EditorPartPresenter editor : synchronizedEditors.keySet()) {
-            resolveAutoSaveFor(editor);
-        }
-    }
-
-    private void resolveAutoSaveFor(EditorPartPresenter editor) {
-        if (!(editor instanceof EditorWithAutoSave)) {
-            return;
-        }
-
-        EditorWithAutoSave editorWithAutoSave = (EditorWithAutoSave)editor;
-        if (editorWithAutoSave == groupLeaderEditor) {
-            editorWithAutoSave.enableAutoSave();
-            return;
-        }
-
-        if (editorWithAutoSave.isAutoSaveEnabled()) {
-            editorWithAutoSave.disableAutoSave();
-        }
     }
 }

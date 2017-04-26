@@ -17,8 +17,6 @@ import com.google.gson.JsonParser;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 
-import org.eclipse.che.dto.server.DtoFactory;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -68,6 +66,10 @@ public class JsonRpcResult {
         } else {
             this.resultList = result.stream().map(Object::toString).map(jsonParser::parse).collect(Collectors.toList());
         }
+    }
+
+    public JsonRpcResult() {
+        this.result = EMPTY_OBJECT;
     }
 
     public boolean isEmptyOrAbsent() {

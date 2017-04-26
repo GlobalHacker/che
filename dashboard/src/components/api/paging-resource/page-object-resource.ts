@@ -168,7 +168,7 @@ export class PageObjectResource {
     if (!pageNumber || !pageLink) {
       return;
     }
-    let pageData: { objects?: Array<any>; link: string; };
+    let pageData: IPageData;
     if (this.objectPagesMap.has(pageNumber)) {
       pageData = this.objectPagesMap.get(pageNumber);
       pageData.link = pageLink;
@@ -229,7 +229,7 @@ export class PageObjectResource {
       default:
         pageNumber = parseInt(pageKey, 10);
     }
-    if (pageNumber.isNaN || pageNumber < 1) {
+    if (isNaN(pageNumber) || pageNumber < 1) {
       deferred.reject({data: {message: 'Error. Invalid page key.'}});
       return deferred.promise;
     }

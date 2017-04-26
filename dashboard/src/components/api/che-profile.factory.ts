@@ -76,7 +76,7 @@ export class CheProfile {
    */
   fetchProfile(): ng.IPromise<che.IProfile> {
     if (this.profile && !this.profile.$resolved) {
-      return this.$q.when(this.profile);
+      return this.profile;
     }
     let profile = this.remoteProfileAPI.get();
     // if we don't yet have data

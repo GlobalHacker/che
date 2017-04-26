@@ -69,11 +69,12 @@ import {ChePopup} from './popup/che-popup.directive';
 import {CheModalPopup} from './popup/che-modal-popup.directive';
 import {CheShowArea} from './show-area/che-show-area.directive';
 import {DemoSourceRender} from './html-source/demo-source-render.directive';
+import {PagingButtons} from './paging-button/paging-button.directive';
 
 
 export class WidgetConfig {
 
-  constructor(register) {
+  constructor(register: che.IRegisterService) {
 
     // accordion
     register.directive('cheAccordion', CheAccordion)
@@ -87,6 +88,8 @@ export class WidgetConfig {
       .directive('cheButtonWarning', CheButtonWarning)
       .directive('cheButtonSaveFlat', CheButtonSaveFlat)
       .directive('cheButtonCancelFlat', CheButtonCancelFlat)
+      // paging buttons
+      .directive('chePagingButtons', PagingButtons)
       // dropdown
       .controller('CheButtonDropdownCtrl', CheButtonDropdownCtrl)
       .directive('cheButtonDropdown', CheButtonDropdown)
